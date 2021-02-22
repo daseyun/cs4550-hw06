@@ -12,12 +12,13 @@ defmodule Bulls.Game do
   end
 
   # return view state.
-  def view(st, errorMessage \\ nil) do
+  def view(st, name, errorMessage \\ nil) do
 
     %{
       guesses: st.guesses,
       errorMessage: errorMessage,
-      gameState: st.gameState
+      gameState: st.gameState,
+      userName: name
     }
   end
 

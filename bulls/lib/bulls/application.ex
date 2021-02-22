@@ -15,7 +15,9 @@ defmodule Bulls.Application do
       BullsWeb.Endpoint,
       # Start a worker by calling: Bulls.Worker.start_link(arg)
       # {Bulls.Worker, arg}
-      Bulls.BackupAgent
+      Bulls.BackupAgent,
+
+      Bulls.GameSup
 
     ]
 

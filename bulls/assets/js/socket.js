@@ -22,6 +22,12 @@ function state_update(st) {
   }
 }
 
+// NEW: try to set the channel for game 
+export function join_game_channel(gameName) {
+  channel = socket.channel("game:" + gameName, {});
+  join_game();
+}
+
 export function guess_join(cb) {
   // console.log("guess", cb, state)
   callback = cb;
@@ -43,7 +49,22 @@ export function guess_reset() {
          });
 }
 
+export function ch_login(userName) {
+  channel.push("login", {userName: userName})
+         .receive("ok", state_update)
+         .receive("error", resp => {
+           console.log("Unable to login", resp)
+         });
+}
+
+
+// channel.join()
+//        .receive("ok", state_update)
+//        .receive("error", resp => { console.log("Unable to join", resp) });
+
+export function join_game() {
 
 channel.join()
        .receive("ok", state_update)
        .receive("error", resp => { console.log("Unable to join", resp) });
+}

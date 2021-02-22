@@ -17,6 +17,7 @@ import ReactDOM from "react-dom";
 import GameOver from "./components/GameOver";
 import AttemptLogs from "./components/AttemptLogs";
 import ErrorMessage from "./components/ErrorMessage";
+import Login from "./components/Login";
 
 function App() {
   const [uiState, setUiState] = useState({
@@ -26,6 +27,7 @@ function App() {
     guesses: {},
     gameState: "IN_PROGRESS",
     errorMessage: null,
+    name: "",
   });
 
   let { attempt } = uiState;
@@ -69,45 +71,60 @@ function App() {
     guess_join(setState);
   }, []);
 
+  // TODO: refactor into diff file
+  let body = null;
+
+  if (!state.name) {
+    console.log("test")
+    body = <Login />;
+  } else {
+    body = 
+      <div>
+        <div className="row">
+          <h1>Bulls and Cows</h1>
+        </div>
+        <ErrorMessage error={errorMessage} />
+        <div className="row box flex">
+          <input
+            id="numberInput"
+            type="number"
+            onKeyPress={keyPress}
+            onChange={handleInputChange}
+            value={attempt}
+            disabled={gameState !== "IN_PROGRESS" ? "disabled" : ""}
+            placeholder="1234"
+          ></input>
+          <button
+            disabled={gameState !== "IN_PROGRESS" ? "disabled" : ""}
+            onClick={() => handleInput()}
+          >
+            Guess
+          </button>
+          <button className="button button-outline" onClick={() => reset()}>
+            Reset
+          </button>
+        </div>
+        <div className="row">
+          <AttemptLogs guesses={guesses} />
+        </div>
+        <div className="row">
+          <GameOver gameState={gameState} />
+        </div>
+        <a
+          href="https://en.wikipedia.org/wiki/Bulls_and_Cows"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Bulls and Cows (Wikipedia)
+        </a>
+      </div>
+    
+  }
+
+
   return (
     <div className="container">
-      <div className="row">
-        <h1>Bulls and Cows</h1>
-      </div>
-      <ErrorMessage error={errorMessage} />
-      <div className="row box flex">
-        <input
-          id="numberInput"
-          type="number"
-          onKeyPress={keyPress}
-          onChange={handleInputChange}
-          value={attempt}
-          disabled={gameState !== "IN_PROGRESS" ? "disabled" : ""}
-          placeholder="1234"
-        ></input>
-        <button
-          disabled={gameState !== "IN_PROGRESS" ? "disabled" : ""}
-          onClick={() => handleInput()}
-        >
-          Guess
-        </button>
-        <button className="button button-outline" onClick={() => reset()}>
-          Reset
-        </button>
-      </div>
-      <div className="row">
-        <AttemptLogs guesses={guesses} />
-      </div>
-      <div className="row">
-        <GameOver gameState={gameState} />
-      </div>
-      <a
-        href="https://en.wikipedia.org/wiki/Bulls_and_Cows"
-        rel="noreferrer"
-        target="_blank"
-      >
-        Bulls and Cows (Wikipedia)
-      </a>
+      {body}
       <br />
       <a href="http://danyun.me">danyun.me</a>
     </div>
