@@ -10,7 +10,7 @@ import "../css/app.scss";
 // Import deps with the dep name or local files with a relative path, for example:
 //
 import { Socket } from "phoenix";
-import socket, { guess_join, guess_push, guess_reset } from "./socket";
+import socket, { guess_join, guess_push, guess_reset, ch_login, join_game_channel } from "./socket";
 import "phoenix_html";
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
@@ -18,52 +18,34 @@ import GameOver from "./components/GameOver";
 import AttemptLogs from "./components/AttemptLogs";
 import ErrorMessage from "./components/ErrorMessage";
 import Login from "./components/Login";
+import Controls from "./components/Controls";
 
 function App() {
-  const [uiState, setUiState] = useState({
-    attempt: "",
-  });
   const [state, setState] = useState({
     guesses: {},
     gameState: "IN_PROGRESS",
     errorMessage: null,
     name: "",
+    userName: "",
+
   });
 
-  let { attempt } = uiState;
   let { guesses, gameState, errorMessage } = state;
-
-  function handleInput() {
-    try {
-      guess_push(attempt);
-      setUiState({
-        attempt: "",
-      });
-    } catch (error) {
-      // clear input for invalid inputs as well
-      setUiState({ attempt: "" });
-    }
-  }
-
-  // update attempt as input changes.
-  function handleInputChange(e) {
-    setUiState({ attempt: e.target.value });
-  }
 
   // reset the states, effectively starting a new game.
   function reset() {
     guess_reset();
-    setUiState({
-      attempt: "",
-    });
+    // setUiState({
+    //   attempt: "",
+    // });
   }
 
-  // handle enter to "guess" in input.
-  // https://github.com/NatTuck/scratch-2021-01/blob/bea430447baec22eb1a5e41d4d1fcce0191b36a3/4550/0202/hangman/src/App.js#L58
-  function keyPress(ev) {
-    if (ev.key === "Enter") {
-      handleInput();
-    }
+  function login(userName) {
+    ch_login(userName);
+  }
+
+  function join(gameName) {
+    join_game_channel(gameName);
   }
 
   useEffect(() => {
@@ -74,36 +56,17 @@ function App() {
   // TODO: refactor into diff file
   let body = null;
 
-  if (!state.name) {
+  if (!state.userName) {
     console.log("test")
-    body = <Login />;
+    body = (<Login ch_login={login} ch_join={join}/>);
   } else {
     body = 
-      <div>
+      (<div>
         <div className="row">
           <h1>Bulls and Cows</h1>
         </div>
         <ErrorMessage error={errorMessage} />
-        <div className="row box flex">
-          <input
-            id="numberInput"
-            type="number"
-            onKeyPress={keyPress}
-            onChange={handleInputChange}
-            value={attempt}
-            disabled={gameState !== "IN_PROGRESS" ? "disabled" : ""}
-            placeholder="1234"
-          ></input>
-          <button
-            disabled={gameState !== "IN_PROGRESS" ? "disabled" : ""}
-            onClick={() => handleInput()}
-          >
-            Guess
-          </button>
-          <button className="button button-outline" onClick={() => reset()}>
-            Reset
-          </button>
-        </div>
+        <Controls guess={guess_push} reset={reset} gameState={gameState}/>
         <div className="row">
           <AttemptLogs guesses={guesses} />
         </div>
@@ -118,10 +81,8 @@ function App() {
           Bulls and Cows (Wikipedia)
         </a>
       </div>
-    
+      );
   }
-
-
   return (
     <div className="container">
       {body}

@@ -21,7 +21,7 @@ defmodule Bulls.GameServer do
   end
 
   def start_link(name) do
-    game = BackupAgent.get(name) || Game.new
+    game = BackupAgent.get(name) || Game.new(name)
     GenServer.start_link(
       __MODULE__,
       game,
@@ -41,6 +41,10 @@ defmodule Bulls.GameServer do
     GenServer.call(reg(name), {:peek, name})
   end
 
+  def addPlayer(name, player) do
+    GenServer.call(reg(name), {:addPlayer, name, player})
+  end
+
   # implementation
 
   def init(game) do
@@ -49,7 +53,7 @@ defmodule Bulls.GameServer do
   end
 
   def handle_call({:reset, name}, _from, game) do
-    game = Game.new()
+    game = Game.new(name)
     BackupAgent.put(name, game)
     {:reply, game, game}
   end
@@ -70,14 +74,20 @@ defmodule Bulls.GameServer do
       end
   end
 
+  def handle_call({:addPlayer, name, user}, _from, game) do
+    game = Game.addPlayer(game, user)
+    BackupAgent.put(name, game);
+    {:reply, game, game}
+  end
+
   def handle_call({:peek, _name}, _from, game) do
     {:reply, game, game}
   end
 
   def handle_info(:pook, game) do
-    game = Game.guess(game, "q") # TODO: what is this
+    IO.inspect([ :game, game])
     BullsWeb.Endpoint.broadcast!(
-      "game:1", # FIXME: Game name should be in state
+      "game:" <> game.gameName, # FIXED: Game name is in state
       "view",
       Game.view(game, ""))
     {:noreply, game}

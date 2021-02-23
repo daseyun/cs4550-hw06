@@ -9,7 +9,10 @@ let channel = socket.channel("game:1", {});
 let state = {
   guesses: {},
   gameState: "IN PROGRESS",
-  errorMessage: null
+  errorMessage: null,
+  userName: "",
+  playerType: "",
+  members: {}
 };
 
 let callback = null;

@@ -2,24 +2,38 @@ defmodule Bulls.Game do
   alias Bulls.GameUtil
 
   # start a new game state
-  def new do
+  def new(gname)do
     %{
       secret: random_secret(4),
       guesses: Map.new(),
       gameState: :IN_PROGRESS,
-      errorMessage: nil
+      errorMessage: nil,
+      players: Map.new(),
+      observers: Map.new(), # list?
+      members: Map.new(), # list of allll players pre setup
+      gameName: gname
     }
   end
 
   # return view state.
   def view(st, name, errorMessage \\ nil) do
-
+    IO.inspect([:st, st])
     %{
       guesses: st.guesses,
       errorMessage: errorMessage,
       gameState: st.gameState,
-      userName: name
+      players: st.players,
+      observers: st.observers,
+      userName: name,
+      members: st.members # => {:players => , :observers=> }
     }
+  end
+
+  # add the user to this
+  def addPlayer(st, user) do
+    IO.inspect([:addPlayer, st, user])
+    l = length(Map.keys(st.members)) + 1
+    %{st | members: Map.put(st.members, l, user)}
   end
 
   # make guess. calculate bnc and return new game state.
