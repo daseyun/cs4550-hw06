@@ -25,6 +25,7 @@ defmodule Bulls.Game do
       players: st.players,
       observers: st.observers,
       userName: name,
+      gameName: st.gameName,
       playerMap: st.playerMap # => { username => [playerType, isReady] }
     }
   end

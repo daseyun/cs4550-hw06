@@ -93,10 +93,11 @@ defmodule BullsWeb.GameChannel do
 
   @impl true
   def handle_out("view", msg, socket) do
-    IO.inspect([:hout, msg, socket])
+    # IO.inspect([:hout, msg])
     user = socket.assigns[:user]
     msg = %{msg | userName: user}
     push(socket, "view", msg)
+    IO.inspect([:hout, msg, socket])
     {:noreply, socket}
   end
 

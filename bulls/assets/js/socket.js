@@ -18,7 +18,7 @@ let state = {
 let callback = null;
 
 function state_update(st) {
-  // console.log("New state", st);
+  console.log("New state", st);
   state = st.game;
   if (callback) {
     callback(st);
@@ -71,7 +71,7 @@ export function ch_ready(userName, playerType) {
 
 export function ch_change_player_type(userName, playerType) {
   console.log("changePlayerType", userName, playerType)
-  channel.push("ready", {userName: userName, playerType: playerType})
+  channel.push("changePlayerType", {userName: userName, playerType: playerType})
          .receive("ok", state_update)
          .receive("error", resp => {
            console.log("Unable to login", resp)
@@ -88,3 +88,6 @@ channel.join()
        .receive("ok", state_update)
        .receive("error", resp => { console.log("Unable to join", resp) });
 }
+
+channel.on("view", console.log("##"))
+channel.on("view", state_update);

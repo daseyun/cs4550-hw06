@@ -72,7 +72,7 @@ function App() {
   if (!state.userName) {
     body = <Login ch_login={login} ch_join={join} />;
   } else if (state.gameState === "IN_SETUP") {
-    body = <GameSetup ch_ready={ready} appState={state} ch_change_player_type={ch_change_player_type}/>;
+    body = <GameSetup ch_ready={ch_ready} appState={state} ch_change_player_type={ch_change_player_type}/>;
   } else {
     body = (
       <div>

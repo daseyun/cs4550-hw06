@@ -26,8 +26,10 @@ function GameSetup({appState, ch_ready, ch_change_player_type}) {
   let players = player_list(playerMap);
 
    function ready(ev) {
+      console.log('r', appState)
        setState({...state, playerIsReady: ev.target.checked });
-       ch_ready(state.userName, state.playerType);
+      //  console.log("st", appState)
+       ch_ready(userName, state.playerType);
    }
  
   function handleChange(ev) {
@@ -52,6 +54,7 @@ function GameSetup({appState, ch_ready, ch_change_player_type}) {
       <div className="row">
         <div className="column">
           <h1>Waiting to start...</h1>
+          <div> {gameName}</div>
           <div> {userName}</div>
           <div> playerType: {playerType} </div>
           <label htmlFor="playerType">Are you...</label>
@@ -78,7 +81,7 @@ function GameSetup({appState, ch_ready, ch_change_player_type}) {
                   <td>{idx + 1}. </td>
                   <td>{username}</td> 
                   <td>{playerMap[username][0]}</td>
-                  <td>{playerMap[username][1]}</td>
+                  <td>{playerIsReady ? "true" : "false"}</td>
                 </tr>
               ))}
             </tbody>
