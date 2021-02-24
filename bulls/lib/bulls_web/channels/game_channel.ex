@@ -37,6 +37,37 @@ defmodule BullsWeb.GameChannel do
     {:reply, {:ok, name}, socket}
   end
 
+  # update user's playertype / broadcast.
+  @impl true
+  def handle_in("changePlayerType", %{"userName" => user, "playerType" => playerType}, socket) do
+    socket = assign(socket, :user, user)
+    name = socket.assigns[:name] # gamename
+    game = socket.assigns[:name]
+    |> GameServer.changePlayerType(user, playerType)
+    |> Game.view(user)
+
+    IO.inspect([:change, user, playerType, game])
+    broadcast(socket, "view", game)
+    {:reply, {:ok, game}, socket}
+
+
+  end
+
+  # update user's playertype / isReady status / broadcast.
+  @impl true
+  def handle_in("ready", %{"userName" => user, "playerType" => playerType}, socket) do
+    socket = assign(socket, :user, user)
+    name = socket.assigns[:name] # gamename
+    game = socket.assigns[:name]
+    |> GameServer.playerIsReady(user, playerType)
+    |> Game.view(user)
+    IO.inspect([:ready, user, playerType, game])
+    broadcast(socket, "view", game)
+    {:reply, {:ok, game}, socket}
+
+
+  end
+
   @impl true
   def handle_in("guess", attempt, socket) do
     user = socket.assigns[:user]
@@ -62,7 +93,7 @@ defmodule BullsWeb.GameChannel do
 
   @impl true
   def handle_out("view", msg, socket) do
-    IO.inspect([:hout, msg])
+    IO.inspect([:hout, msg, socket])
     user = socket.assigns[:user]
     msg = %{msg | userName: user}
     push(socket, "view", msg)

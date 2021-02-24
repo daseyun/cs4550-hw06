@@ -10,7 +10,15 @@ import "../css/app.scss";
 // Import deps with the dep name or local files with a relative path, for example:
 //
 import { Socket } from "phoenix";
-import socket, { guess_join, guess_push, guess_reset, ch_login, join_game_channel } from "./socket";
+import socket, {
+  guess_join,
+  guess_push,
+  guess_reset,
+  ch_login,
+  join_game_channel,
+  ch_change_player_type,
+  ch_ready,
+} from "./socket";
 import "phoenix_html";
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
@@ -19,6 +27,7 @@ import AttemptLogs from "./components/AttemptLogs";
 import ErrorMessage from "./components/ErrorMessage";
 import Login from "./components/Login";
 import Controls from "./components/Controls";
+import GameSetup from "./components/GameSetup";
 
 function App() {
   const [state, setState] = useState({
@@ -27,10 +36,10 @@ function App() {
     errorMessage: null,
     name: "",
     userName: "",
-
+    playerType: "",
   });
 
-  let { guesses, gameState, errorMessage } = state;
+  let { userName, guesses, gameState, errorMessage } = state;
 
   // reset the states, effectively starting a new game.
   function reset() {
@@ -48,6 +57,10 @@ function App() {
     join_game_channel(gameName);
   }
 
+  function ready(userName, playerType) {
+    ch_ready(userName, playerType);
+  }
+
   useEffect(() => {
     document.title = "Bulls and Cows";
     guess_join(setState);
@@ -57,16 +70,17 @@ function App() {
   let body = null;
 
   if (!state.userName) {
-    console.log("test")
-    body = (<Login ch_login={login} ch_join={join}/>);
+    body = <Login ch_login={login} ch_join={join} />;
+  } else if (state.gameState === "IN_SETUP") {
+    body = <GameSetup ch_ready={ready} appState={state} ch_change_player_type={ch_change_player_type}/>;
   } else {
-    body = 
-      (<div>
+    body = (
+      <div>
         <div className="row">
           <h1>Bulls and Cows</h1>
         </div>
         <ErrorMessage error={errorMessage} />
-        <Controls guess={guess_push} reset={reset} gameState={gameState}/>
+        <Controls guess={guess_push} reset={reset} gameState={gameState} />
         <div className="row">
           <AttemptLogs guesses={guesses} />
         </div>
@@ -81,7 +95,7 @@ function App() {
           Bulls and Cows (Wikipedia)
         </a>
       </div>
-      );
+    );
   }
   return (
     <div className="container">

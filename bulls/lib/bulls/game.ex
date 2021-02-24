@@ -6,18 +6,18 @@ defmodule Bulls.Game do
     %{
       secret: random_secret(4),
       guesses: Map.new(),
-      gameState: :IN_PROGRESS,
+      gameState: :IN_SETUP,
       errorMessage: nil,
       players: Map.new(),
       observers: Map.new(), # list?
-      members: Map.new(), # list of allll players pre setup
+      playerMap: Map.new(), # list of allll players pre setup
       gameName: gname
     }
   end
 
   # return view state.
   def view(st, name, errorMessage \\ nil) do
-    IO.inspect([:st, st])
+    # IO.inspect([:st, st])
     %{
       guesses: st.guesses,
       errorMessage: errorMessage,
@@ -25,15 +25,26 @@ defmodule Bulls.Game do
       players: st.players,
       observers: st.observers,
       userName: name,
-      members: st.members # => {:players => , :observers=> }
+      playerMap: st.playerMap # => { username => [playerType, isReady] }
     }
   end
 
   # add the user to this
   def addPlayer(st, user) do
-    IO.inspect([:addPlayer, st, user])
-    l = length(Map.keys(st.members)) + 1
-    %{st | members: Map.put(st.members, l, user)}
+    l = length(Map.keys(st.playerMap)) + 1
+    %{st | playerMap: Map.put(st.playerMap, user, ["Observer", false])}
+  end
+
+  # update the user's playertype
+  def changePlayerType(st, user, playerType) do
+    IO.inspect([:fnPTchange, st, user, playerType])
+    %{st | playerMap: Map.put(st.playerMap, user, [playerType, false])}
+  end
+
+  # update the user's playertype and marks as ready
+  def playerIsReady(st, user, playerType) do
+    IO.inspect([:fnPready, st, user, playerType])
+    %{st | playerMap: Map.put(st.playerMap, user, [playerType, true])}
   end
 
   # make guess. calculate bnc and return new game state.

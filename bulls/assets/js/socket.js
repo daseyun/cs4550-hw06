@@ -8,11 +8,11 @@ let channel = socket.channel("game:1", {});
 
 let state = {
   guesses: {},
-  gameState: "IN PROGRESS",
+  gameState: "IN SETUP",
   errorMessage: null,
   userName: "",
   playerType: "",
-  members: {}
+  playerMap: {}
 };
 
 let callback = null;
@@ -37,7 +37,7 @@ export function guess_join(cb) {
   callback(state);
 }
 
-export function guess_push(guess) {
+export function gueess_push(guess) {
   // console.log("guessPush", guess)
   channel.push("guess", guess)
          .receive("ok", state_update)
@@ -60,6 +60,23 @@ export function ch_login(userName) {
          });
 }
 
+export function ch_ready(userName, playerType) {
+  console.log("ch_ready", userName, playerType)
+  channel.push("ready", {userName: userName, playerType: playerType})
+         .receive("ok", state_update)
+         .receive("error", resp => {
+           console.log("Unable to login", resp)
+         });
+}
+
+export function ch_change_player_type(userName, playerType) {
+  console.log("changePlayerType", userName, playerType)
+  channel.push("ready", {userName: userName, playerType: playerType})
+         .receive("ok", state_update)
+         .receive("error", resp => {
+           console.log("Unable to login", resp)
+         });
+}
 
 // channel.join()
 //        .receive("ok", state_update)
