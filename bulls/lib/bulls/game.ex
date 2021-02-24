@@ -38,13 +38,12 @@ defmodule Bulls.Game do
 
   # update the user's playertype
   def changePlayerType(st, user, playerType) do
-    IO.inspect([:fnPTchange, st, user, playerType])
     %{st | playerMap: Map.put(st.playerMap, user, [playerType, false])}
   end
 
   # update the user's playertype and marks as ready
   def playerIsReady(st, user, playerType) do
-    IO.inspect([:fnPready, st, user, playerType])
+    # IO.inspect([:fnPready, st, user, playerType])
     %{st | playerMap: Map.put(st.playerMap, user, [playerType, true])}
   end
 

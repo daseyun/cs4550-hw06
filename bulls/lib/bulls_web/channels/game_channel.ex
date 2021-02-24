@@ -46,7 +46,6 @@ defmodule BullsWeb.GameChannel do
     |> GameServer.changePlayerType(user, playerType)
     |> Game.view(user)
 
-    IO.inspect([:change, user, playerType, game])
     broadcast(socket, "view", game)
     {:reply, {:ok, game}, socket}
 
@@ -61,7 +60,6 @@ defmodule BullsWeb.GameChannel do
     game = socket.assigns[:name]
     |> GameServer.playerIsReady(user, playerType)
     |> Game.view(user)
-    IO.inspect([:ready, user, playerType, game])
     broadcast(socket, "view", game)
     {:reply, {:ok, game}, socket}
 
@@ -74,6 +72,7 @@ defmodule BullsWeb.GameChannel do
     name = socket.assigns[:name]
     |> GameServer.guess(attempt)
     |> Game.view(user)
+
 
     broadcast(socket, "view", name)
     {:reply, {:ok, name}, socket}
@@ -93,11 +92,9 @@ defmodule BullsWeb.GameChannel do
 
   @impl true
   def handle_out("view", msg, socket) do
-    # IO.inspect([:hout, msg])
     user = socket.assigns[:user]
     msg = %{msg | userName: user}
     push(socket, "view", msg)
-    IO.inspect([:hout, msg, socket])
     {:noreply, socket}
   end
 

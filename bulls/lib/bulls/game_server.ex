@@ -104,7 +104,6 @@ defmodule Bulls.GameServer do
   end
 
   def handle_info(:pook, game) do
-    IO.inspect([ :game, game])
     BullsWeb.Endpoint.broadcast!(
       "game:" <> game.gameName, # FIXED: Game name is in state
       "view",
