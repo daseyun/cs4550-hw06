@@ -36,9 +36,9 @@ export function guess_join(cb) {
   callback(state);
 }
 
-export function gueess_push(guess) {
+export function guess_push(guess, userName) {
   channel
-    .push("guess", guess)
+    .push("guess", {guess: guess, userName: userName })
     .receive("ok", state_update)
     .receive("error", (resp) => {
       console.log("Unable to push", resp);

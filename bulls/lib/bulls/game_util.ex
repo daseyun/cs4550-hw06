@@ -33,18 +33,76 @@ defmodule Bulls.GameUtil do
     to_string(MapSet.size(bulls_set)) <> "A" <> to_string(cows_count) <> "B"
   end
 
-  # return error messages if input is invalid.
-  def getErrorMessages(guesses, attempt) do
-    cond do
-      isAlreadyAttempted?(guesses, attempt) ->
-        "number already guessed"
+  def fillGuessesWithPass(st) do
+    l = length(Map.keys(st.guesses)) + 1;
+    notGuessed = notGuessedPlayers(st);
 
+    function = fn user, [length, map] ->
+      [length + 1, %{ map | guesses: Map.put(map.guesses, length, ["PASS", "0A0B", user, st.turnNumber])}]
+    end
+    [length, state] = Enum.reduce(notGuessed, [l, st], function)
+    %{ state | turnNumber: state.turnNumber + 1 }
+  end
+  # Bulls.GameUtil.fillGuessesWithPass(st)
+
+  defp notGuessedPlayers(st) do
+    function = fn mapping, players ->
+      {guess, guessInfo} = mapping
+      [val, bscs, user, turn] = guessInfo
+      cond do
+        turn == st.turnNumber -> [ user | players ]
+        true -> players
+      end
+    end
+    guessed = Enum.reduce(st.guesses, [], function)
+    func2 = fn mapping, players ->
+      {username, info} = mapping
+      if (hd info) == "Player" do
+        [ username | players ]
+      else
+        players
+      end
+    end
+    Enum.reduce(st.playerMap, [], func2) -- guessed;
+  end
+
+
+  # return error messages if input is invalid.
+  def getErrorMessages(st, userName, attempt) do
+
+    userGuesses = userGuesses(st.guesses, userName)
+
+    cond do
+      # TODO: do we need to check this per player ?
+      # TODO: might work after we implement the wait for everyone broadcast
+      # isAlreadyAttempted?(guesses, attempt) ->
+      #   "number already guessed"
+
+      !isValidTurnAttempt(userGuesses, st.turnNumber) ->
+        "invalid move. you must wait for everyone to go."
       !isAttemptProper?(attempt) ->
         "invalid number: cannot start with 0 and must have 4 unique digits."
 
       true ->
         nil
     end
+  end
+
+  defp userGuesses(guesses, username) do
+     function = fn mapping, list ->
+      {guess, guessInfo} = mapping
+      [val, bscs, user, turn] = guessInfo
+      cond do
+        user == username -> [turn | list]
+        true -> list
+      end
+    end
+    Enum.reduce(guesses, [], function)
+  end
+
+  def isValidTurnAttempt(userTurns, turnNumber) do
+    !Enum.any?(userTurns, fn(x) -> x == turnNumber end)
+    true # delete this later
   end
 
   # check if attempt was already inputted before.
@@ -62,6 +120,7 @@ defmodule Bulls.GameUtil do
     notAllInt = Enum.any?(String.graphemes(attempt), fn(x) -> Float.parse(x) == :error end)
 
     cond do
+      attempt == "PASS" -> true
       digit1 == "0" -> false
       l != 4 -> false
       set_l != 4 -> false

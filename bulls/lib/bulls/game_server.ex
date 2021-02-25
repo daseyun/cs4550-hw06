@@ -3,6 +3,7 @@ defmodule Bulls.GameServer do
 
   alias Bulls.BackupAgent
   alias Bulls.Game
+  alias Bulls.GameUtil
 
   # public interface
 
@@ -17,11 +18,13 @@ defmodule Bulls.GameServer do
       restart: :permanent,
       type: :worker
     }
+
     Bulls.GameSup.start_child(spec)
   end
 
   def start_link(name) do
     game = BackupAgent.get(name) || Game.new(name)
+
     GenServer.start_link(
       __MODULE__,
       game,
@@ -33,8 +36,8 @@ defmodule Bulls.GameServer do
     GenServer.call(reg(name), {:reset, name})
   end
 
-  def guess(name, letter) do
-    GenServer.call(reg(name), {:guess, name, letter})
+  def guess(name, attempt, username) do
+    GenServer.call(reg(name), {:guess, name, attempt, username})
   end
 
   def peek(name) do
@@ -52,6 +55,7 @@ defmodule Bulls.GameServer do
   def playerIsReady(name, player, playerType) do
     GenServer.call(reg(name), {:playerIsReady, name, player, playerType})
   end
+
   # implementation
 
   def init(game) do
@@ -65,9 +69,10 @@ defmodule Bulls.GameServer do
     {:reply, game, game}
   end
 
-  def handle_call({:guess, name, attempt}, _from, game) do
+  def handle_call({:guess, name, attempt, userName}, _from, game) do
     st = BackupAgent.get(name)
-    errorMessage = GameUtil.getErrorMessages(st.guesses, attempt)
+    errorMessage = GameUtil.getErrorMessages(st, userName, attempt)
+
     cond do
       errorMessage != nil ->
         {:reply, {:ok, Game.view(st, errorMessage)}}
@@ -75,27 +80,28 @@ defmodule Bulls.GameServer do
       st.gameState != :IN_PROGRESS ->
         {:reply, {:error, "game is over"}}
 
-      true -> game = Game.guess(game, attempt)
+      true ->
+        game = Game.guess(game, attempt, userName)
         BackupAgent.put(name, game)
         {:reply, game, game}
-      end
+    end
   end
 
   def handle_call({:addPlayer, name, user}, _from, game) do
     game = Game.addPlayer(game, user)
-    BackupAgent.put(name, game);
+    BackupAgent.put(name, game)
     {:reply, game, game}
   end
 
   def handle_call({:changePlayerType, name, user, playerType}, _from, game) do
     game = Game.changePlayerType(game, user, playerType)
-    BackupAgent.put(name, game);
+    BackupAgent.put(name, game)
     {:reply, game, game}
   end
 
   def handle_call({:playerIsReady, name, user, playerType}, _from, game) do
     game = Game.playerIsReady(game, user, playerType)
-    BackupAgent.put(name, game);
+    BackupAgent.put(name, game)
     {:reply, game, game}
   end
 
@@ -103,11 +109,38 @@ defmodule Bulls.GameServer do
     {:reply, game, game}
   end
 
+  def handle_info(:turn, game) do
+    IO.inspect([:timer, game])
+
+    cond do
+      game.gameState == :WIN ->
+        {:noreply, %{game | timer: :NO_TIMER}}
+
+      true ->
+        # fill in all the non-guesses with PASS
+        updatedGame = GameUtil.fillGuessesWithPass(game)
+        ref = Process.send_after(self(), :turn, 10000, [])
+        g = %{updatedGame | timer: ref}
+        BackupAgent.put(game.gameName, g)
+        BullsWeb.Endpoint.broadcast!(
+          "game:" <> game.gameName,
+          "view",
+          Game.view(g, "")
+        )
+        {:noreply, g}
+    end
+
+    # {:noreply, game}
+  end
+
   def handle_info(:pook, game) do
     BullsWeb.Endpoint.broadcast!(
-      "game:" <> game.gameName, # FIXED: Game name is in state
+      # FIXED: Game name is in state
+      "game:" <> game.gameName,
       "view",
-      Game.view(game, ""))
+      Game.view(game, "")
+    )
+
     {:noreply, game}
   end
 end

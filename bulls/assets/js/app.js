@@ -36,17 +36,14 @@ function App() {
     errorMessage: null,
     name: "",
     userName: "",
-    playerType: "",
+    playerMap: {}
   });
 
-  let { userName, guesses, gameState, errorMessage } = state;
-
+  let { userName, guesses, gameState, errorMessage, playerMap } = state;
+  let playerType = playerMap && playerMap[state.userName] ? playerMap[state.userName][0] : "Observer";
   // reset the states, effectively starting a new game.
   function reset() {
     guess_reset();
-    // setUiState({
-    //   attempt: "",
-    // });
   }
 
   function login(userName) {
@@ -60,11 +57,19 @@ function App() {
   function ready(userName, playerType) {
     ch_ready(userName, playerType);
   }
+  function pass() {
+    //IMPL
+  }
 
   useEffect(() => {
     document.title = "Bulls and Cows";
     guess_join(setState);
   }, []);
+
+  let controls = (<div>How are they doing?</div>);
+  if (playerType === "Player") {
+    controls = (<Controls userName={userName} guess={guess_push} reset={reset} pass={pass} gameState={gameState} />);
+  }
 
   // TODO: refactor into diff file
   let body = null;
@@ -80,7 +85,7 @@ function App() {
           <h1>Bulls and Cows</h1>
         </div>
         <ErrorMessage error={errorMessage} />
-        <Controls guess={guess_push} reset={reset} gameState={gameState} />
+        {controls}
         <div className="row">
           <AttemptLogs guesses={guesses} />
         </div>

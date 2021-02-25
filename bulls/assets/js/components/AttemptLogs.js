@@ -12,6 +12,7 @@ function AttemptLogs(props) {
             <th> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
             <th>Guess</th>
             <th>Result</th>
+            <th>Player</th> 
           </tr>
         </thead>
         <tbody>
@@ -20,6 +21,7 @@ function AttemptLogs(props) {
               <td>{idx + 1}. </td>
               <td>{guesses[obj][0]}</td>
               <td>{guesses[obj][1]}</td>
+              <td>{guesses[obj][2]}</td>
             </tr>
           ))}
         </tbody>

@@ -62,19 +62,28 @@ defmodule BullsWeb.GameChannel do
     |> Game.view(user)
     broadcast(socket, "view", game)
     {:reply, {:ok, game}, socket}
-
-
   end
 
   @impl true
-  def handle_in("guess", attempt, socket) do
-    user = socket.assigns[:user]
+  def handle_in("guess", %{"guess" => attempt, "userName" => userName}, socket) do
+    # user = socket.assigns[:user]
     name = socket.assigns[:name]
-    |> GameServer.guess(attempt)
-    |> Game.view(user)
+    # check if user has guessed in this turn
+    # if not, allow the code below to pass
+    # if so, toss an error telling them to wait
+    oldGame = GameServer.peek(name)
+    oldTurn = oldGame.turnNumber
+    IO.inspect([:guessHandle, oldGame, oldTurn])
 
+    name = socket.assigns[:name]
+    |> GameServer.guess(attempt, userName)
+    |> Game.view(userName)
 
-    broadcast(socket, "view", name)
+    # if the turn is different, that means we killed the timer and moved on
+    # therefore everyone can see eachother's guesses
+    if !(oldTurn == name.turnNumber) do
+      broadcast(socket, "view", name)
+    end
     {:reply, {:ok, name}, socket}
   end
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function Controls({guess, reset, gameState}) {
+function Controls({guess, reset, pass, gameState, userName}) {
     const [uiState, setUiState] = useState({
         attempt: "",
       });
@@ -9,7 +9,7 @@ function Controls({guess, reset, gameState}) {
 
   function handleInput() {
     try {
-      guess(attempt);
+      guess(attempt, userName);
       setUiState({
         attempt: "",
       });
@@ -32,6 +32,13 @@ function Controls({guess, reset, gameState}) {
     }
   }
 
+  function pass() {
+    guess("PASS", userName);
+    setUiState({
+      attempt: "",
+    });
+  }
+
   return (<div className="row box flex">
   <input
     id="numberInput"
@@ -49,6 +56,9 @@ function Controls({guess, reset, gameState}) {
   </button>
   <button className="button button-outline" onClick={() => reset()}>
     Reset
+  </button>
+  <button className="button button-outline" onClick={() => pass()}>
+    Pass
   </button>
 </div>);
 }
