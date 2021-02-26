@@ -18,7 +18,6 @@ let channel = null;
 let callback = null;
 
 function state_update(st) {
-  console.log("New state", st);
   state = st.game;
   if (callback) {
     callback(st);
@@ -64,7 +63,6 @@ export function ch_login(userName) {
 }
 
 export function ch_ready(userName, playerType) {
-  console.log("ch_ready", userName, playerType);
   channel
     .push("ready", { userName: userName, playerType: playerType })
     .receive("ok", state_update)

@@ -31,7 +31,7 @@ function GameSetup({ leaveGame, appState, ch_ready, ch_change_player_type }) {
   let { playerType, playerIsReady } = state;
   let players = player_list(playerMap);
   let prev_winners = find_last_winners(playerMap);
-  console.log(prev_winners)
+
   function ready(ev) {
     setState({ ...state, playerIsReady: ev.target.checked });
     ch_ready(userName, state.playerType);
@@ -52,7 +52,7 @@ function GameSetup({ leaveGame, appState, ch_ready, ch_change_player_type }) {
   }
 
   let previousWinners = (<span></span>);
-  console.log(prev_winners)
+
   if (prev_winners != []) {
     previousWinners = (<div>Previous winners: {prev_winners.join(', ')}</div>)
   }
