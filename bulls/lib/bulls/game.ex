@@ -17,7 +17,8 @@ defmodule Bulls.Game do
   end
 
   def new(gname, playerMap, timer) do
-  if timer != :NO_TIMER, do: Process.cancel_timer(timer, [])
+    if timer != :NO_TIMER, do: Process.cancel_timer(timer, [])
+
     %{
       secret: random_secret(4),
       timer: :NO_TIMER,
@@ -61,6 +62,16 @@ defmodule Bulls.Game do
     %{st | playerMap: Map.put(st.playerMap, user, ["Observer", false, false, 0, 0])}
   end
 
+  def leaveGame(st, user) do
+    gst = %{st | playerMap: Map.delete(st.playerMap, user)}
+    if map_size(gst.playerMap) == 0 do
+      if gst.timer != :NO_TIMER, do: Process.cancel_timer(gst.timer, [])
+      new(st.gameName)
+    else
+      gst
+    end
+  end
+
   # update the user's playertype
   def changePlayerType(st, user, playerType) do
     [_, _, wonLast, wins, losses] = st.playerMap[user]
@@ -71,7 +82,11 @@ defmodule Bulls.Game do
   def playerIsReady(st, user, playerType) do
     # check all Player type members are ready, if so change the game state
     [_, _, wonLast, wins, losses] = st.playerMap[user]
-    ret = %{st | playerMap: Map.put(st.playerMap, user, [playerType, true, wonLast, wins, losses])}
+
+    ret = %{
+      st
+      | playerMap: Map.put(st.playerMap, user, [playerType, true, wonLast, wins, losses])
+    }
 
     if readyToStart?(ret.playerMap) do
       ref = Process.send_after(self(), :turn, 30000, [])
@@ -116,6 +131,7 @@ defmodule Bulls.Game do
       allPlayersMadeGuess?(gmst) ->
         # also kill timer process and make a new one
         IO.inspect([:allMadeGuess, st.secret])
+
         if gmst.gameState == :WIN do
           gst = checkForWinners(gmst)
           if gst.timer != :NO_TIMER, do: Process.cancel_timer(gst.timer, [])
@@ -125,6 +141,7 @@ defmodule Bulls.Game do
           if gmst.timer != :NO_TIMER, do: Process.cancel_timer(gmst.timer, [])
           %{gmst | turnNumber: gmst.turnNumber + 1, timer: ref}
         end
+
       true ->
         gmst
     end
@@ -146,39 +163,46 @@ defmodule Bulls.Game do
   end
 
   def checkForWinners(st) do
-      lastGuesses = lastTurnGuesses(st)
-      function = fn mapping, state ->
-        {_, guessInfo} = mapping
-        [_, bnc, user, _] = guessInfo
-        [type, _, _, wins, losses] = state.playerMap[user]
+    lastGuesses = lastTurnGuesses(st)
 
-        if bnc == "4A0B" do
-          %{
-            state
-            | playerMap: Map.put(state.playerMap, user, [type, false, true, wins + 1, losses])
-          }
-        else
-          %{
-            state
-            | playerMap: Map.put(state.playerMap, user, [type, false, false, wins, losses + 1])
-          }
-        end
+    function = fn mapping, state ->
+      {_, guessInfo} = mapping
+      [_, bnc, user, _] = guessInfo
+      [type, _, _, wins, losses] = state.playerMap[user]
+
+      if bnc == "4A0B" do
+        %{
+          state
+          | playerMap: Map.put(state.playerMap, user, [type, false, true, wins + 1, losses])
+        }
+      else
+        %{
+          state
+          | playerMap: Map.put(state.playerMap, user, [type, false, false, wins, losses + 1])
+        }
       end
+    end
 
-      quickState = resetLastWinners(st.playerMap, st)
-      newSt = Enum.reduce(lastGuesses, quickState, function)
-      new(newSt.gameName, newSt.playerMap, newSt.timer)
+    quickState = resetLastWinners(st.playerMap, st)
+    newSt = Enum.reduce(lastGuesses, quickState, function)
+    new(newSt.gameName, newSt.playerMap, newSt.timer)
   end
 
   def resetLastWinners(playerMap, st) do
     func2 = fn mapping, state ->
       {user, userInfo} = mapping
       [type, _, _, wins, losses] = userInfo
-      if type == "Observer", do: %{state | playerMap: Map.put(state.playerMap, user, [type, false, false, wins, losses])}, else: state
+
+      if type == "Observer",
+        do: %{
+          state
+          | playerMap: Map.put(state.playerMap, user, [type, false, false, wins, losses])
+        },
+        else: state
     end
+
     Enum.reduce(playerMap, st, func2)
   end
-
 
   # boolean
   def allPlayersMadeGuess?(st) do

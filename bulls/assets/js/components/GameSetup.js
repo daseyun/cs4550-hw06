@@ -16,7 +16,7 @@ function IsReady({ ready }) {
   );
 }
 
-function GameSetup({ appState, ch_ready, ch_change_player_type }) {
+function GameSetup({ leaveGame, appState, ch_ready, ch_change_player_type }) {
   // i.e. a lobby
   let { gameName, userName, playerMap } = appState;
   let playerInfo = appState.playerMap[userName];
@@ -76,6 +76,9 @@ function GameSetup({ appState, ch_ready, ch_change_player_type }) {
             <option value="Player">Player</option>
           </select>
           {readyUp}
+          <button
+            onClick={() => leaveGame()}
+          >Leave Game</button>
         </div>
         <div className="column">
           {previousWinners}

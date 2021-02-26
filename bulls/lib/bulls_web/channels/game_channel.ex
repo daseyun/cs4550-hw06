@@ -52,6 +52,26 @@ defmodule BullsWeb.GameChannel do
 
   end
 
+  # update user's playertype / broadcast.
+  @impl true
+  def handle_in("leaveGame", %{"userName" => user}, socket) do
+    socket = assign(socket, :user, user)
+    name = socket.assigns[:name] # gamename
+    game = socket.assigns[:name]
+    |> GameServer.leaveGame(user)
+    |> Game.view(user)
+    broadcast(socket, "view", game)
+    #get out
+    socket = socket
+        |> assign(:name, "")
+        |> assign(:user, "")
+    {:reply, {:ok, %{
+        errorMessage: nil,
+        userName: "",
+        gameName: ""
+      }}, socket}
+  end
+
   # update user's playertype / isReady status / broadcast.
   @impl true
   def handle_in("ready", %{"userName" => user, "playerType" => playerType}, socket) do

@@ -40,7 +40,7 @@ function Login({ ch_login, ch_join }) {
             value={gameName}
             onKeyPress={keyPressJoin}
             onChange={(ev) => setState({ ...state, gameName: ev.target.value })}
-            placeholder="gamename"
+            placeholder="Enter Game Name"
             disabled={join_disable ? "disabled" : ""}
           />
         </div>
@@ -58,7 +58,7 @@ function Login({ ch_login, ch_join }) {
             value={userName}
             onKeyPress={keyPressLogin}
             onChange={(ev) => setState({ ...state, userName: ev.target.value })}
-            placeholder="userName"
+            placeholder="Enter Username"
             disabled={join_disable ? "" : "disabled"}
           />
         </div>

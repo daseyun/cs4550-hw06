@@ -60,6 +60,7 @@ function Controls({guess, reset, pass, gameState, userName}) {
   <button className="button button-outline" onClick={() => pass()}>
     Pass
   </button>
+  
 </div>);
 }
 

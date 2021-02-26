@@ -18,6 +18,7 @@ import socket, {
   join_game_channel,
   ch_change_player_type,
   ch_ready,
+  leave_game,
 } from "./socket";
 import "phoenix_html";
 import React, { useState, useEffect } from "react";
@@ -36,14 +37,21 @@ function App() {
     errorMessage: null,
     name: "",
     userName: "",
-    playerMap: {}
+    playerMap: {},
   });
 
   let { userName, guesses, gameState, errorMessage, playerMap } = state;
-  let playerType = playerMap && playerMap[state.userName] ? playerMap[state.userName][0] : "Observer";
+  let playerType =
+    playerMap && playerMap[state.userName]
+      ? playerMap[state.userName][0]
+      : "Observer";
   // reset the states, effectively starting a new game.
   function reset() {
     guess_reset();
+  }
+
+  function leaveGame() {
+    leave_game(userName);
   }
 
   function login(userName) {
@@ -66,18 +74,33 @@ function App() {
     guess_join(setState);
   }, []);
 
-  let controls = (<div>How are they doing?</div>);
+  let controls = <div>How are they doing?</div>;
   if (playerType === "Player") {
-    controls = (<Controls userName={userName} guess={guess_push} reset={reset} pass={pass} gameState={gameState} />);
+    controls = (
+      <Controls
+        userName={userName}
+        guess={guess_push}
+        reset={reset}
+        pass={pass}
+        gameState={gameState}
+      />
+    );
   }
 
   // TODO: refactor into diff file
   let body = null;
 
-  if (!state.userName) {
+  if (!state.userName || !state.gameName) {
     body = <Login ch_login={login} ch_join={join} />;
   } else if (state.gameState === "IN_SETUP") {
-    body = <GameSetup ch_ready={ch_ready} appState={state} ch_change_player_type={ch_change_player_type}/>;
+    body = (
+      <GameSetup
+        leaveGame={leaveGame}
+        ch_ready={ch_ready}
+        appState={state}
+        ch_change_player_type={ch_change_player_type}
+      />
+    );
   } else {
     body = (
       <div>
@@ -92,13 +115,17 @@ function App() {
         <div className="row">
           <GameOver gameState={gameState} />
         </div>
+        <div>
+          <button onClick={() => leaveGame()}>Leave Game</button>
+        </div>
+        <br />
         <a
           href="https://en.wikipedia.org/wiki/Bulls_and_Cows"
           rel="noreferrer"
           target="_blank"
         >
           Bulls and Cows (Wikipedia)
-        </a>
+        </a>      
       </div>
     );
   }
@@ -106,7 +133,7 @@ function App() {
     <div className="container">
       {body}
       <br />
-      <a href="http://danyun.me">danyun.me</a>
+      <a href="http://danyun.me">danyun.me</a> // <a href="http://gkriti.art">gkriti.art</a>
     </div>
   );
 }

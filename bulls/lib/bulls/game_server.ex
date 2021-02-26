@@ -48,6 +48,10 @@ defmodule Bulls.GameServer do
     GenServer.call(reg(name), {:addPlayer, name, player})
   end
 
+  def leaveGame(name, player) do
+    GenServer.call(reg(name), {:leaveGame, name, player})
+  end
+
   def changePlayerType(name, player, playerType) do
     GenServer.call(reg(name), {:changePlayerType, name, player, playerType})
   end
@@ -55,6 +59,7 @@ defmodule Bulls.GameServer do
   def playerIsReady(name, player, playerType) do
     GenServer.call(reg(name), {:playerIsReady, name, player, playerType})
   end
+
 
   # implementation
 
@@ -91,6 +96,12 @@ defmodule Bulls.GameServer do
 
   def handle_call({:addPlayer, name, user}, _from, game) do
     game = Game.addPlayer(game, user)
+    BackupAgent.put(name, game)
+    {:reply, game, game}
+  end
+
+  def handle_call({:leaveGame, name, user}, _from, game) do
+    game = Game.leaveGame(game, user)
     BackupAgent.put(name, game)
     {:reply, game, game}
   end
