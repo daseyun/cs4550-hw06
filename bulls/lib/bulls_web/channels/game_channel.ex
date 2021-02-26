@@ -32,7 +32,6 @@ defmodule BullsWeb.GameChannel do
     name = socket.assigns[:name]
     |> GameServer.addPlayer(user)
     |> Game.view(user)
-    # IO.inspect(view)
     broadcast(socket, "view", name)
     {:reply, {:ok, name}, socket}
   end
@@ -97,13 +96,16 @@ defmodule BullsWeb.GameChannel do
     name = socket.assigns[:name]
     |> GameServer.guess(attempt, userName)
     |> Game.view(userName)
-    IO.inspect([:handle_guess, name, name.errorMessage])
+
     # if the turn is different, that means we killed the timer and moved on
     # therefore everyone can see eachother's guesses
     if !(oldTurn == name.turnNumber) do
       broadcast(socket, "view", name)
+      {:reply, {:ok, name}, socket}
+    else
+      playerView = GameUtil.hideGuesses(name, userName)
+      {:reply, {:ok, playerView}, socket}
     end
-    {:reply, {:ok, name}, socket}
   end
 
   @impl true

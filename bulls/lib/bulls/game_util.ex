@@ -33,6 +33,30 @@ defmodule Bulls.GameUtil do
     to_string(MapSet.size(bulls_set)) <> "A" <> to_string(cows_count) <> "B"
   end
 
+  def hideGuesses(st, userName) do
+    turnGuesses = lastTurnGuesses(st)
+    function = fn guess, state ->
+      {guessNum, guessInfo} = guess
+      [val, bnc, user, turn] = guessInfo
+      if user != userName, do: %{state | guesses: Map.delete(state.guesses, guessNum)}, else: state
+    end
+    Enum.reduce(turnGuesses, st, function)
+  end
+
+  def lastTurnGuesses(st) do
+    function = fn mapping, guesses ->
+      {guessnum, guessInfo} = mapping
+      [_, _, _, turn] = guessInfo
+
+      if turn == st.turnNumber do
+        [mapping | guesses]
+      else
+        guesses
+      end
+    end
+    Enum.reduce(st.guesses, [], function)
+  end
+
   def fillGuessesWithPass(st) do
     l = length(Map.keys(st.guesses)) + 1;
     notGuessed = notGuessedPlayers(st);

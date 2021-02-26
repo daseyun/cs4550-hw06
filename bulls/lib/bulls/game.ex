@@ -64,6 +64,7 @@ defmodule Bulls.Game do
 
   def leaveGame(st, user) do
     gst = %{st | playerMap: Map.delete(st.playerMap, user)}
+
     if map_size(gst.playerMap) == 0 do
       if gst.timer != :NO_TIMER, do: Process.cancel_timer(gst.timer, [])
       new(st.gameName)
@@ -94,9 +95,6 @@ defmodule Bulls.Game do
     else
       ret
     end
-
-    # IO.inspect([:join, ret, readyToStart?(ret.playerMap)])
-    # ret
   end
 
   # returns true if game is ready to start
@@ -130,7 +128,6 @@ defmodule Bulls.Game do
     cond do
       allPlayersMadeGuess?(gmst) ->
         # also kill timer process and make a new one
-        IO.inspect([:allMadeGuess, st.secret])
 
         if gmst.gameState == :WIN do
           gst = checkForWinners(gmst)
@@ -147,23 +144,8 @@ defmodule Bulls.Game do
     end
   end
 
-  def lastTurnGuesses(st) do
-    function = fn mapping, guesses ->
-      {guessnum, guessInfo} = mapping
-      [_, _, _, turn] = guessInfo
-
-      if turn == st.turnNumber do
-        [mapping | guesses]
-      else
-        guesses
-      end
-    end
-
-    Enum.reduce(st.guesses, [], function)
-  end
-
   def checkForWinners(st) do
-    lastGuesses = lastTurnGuesses(st)
+    lastGuesses = GameUtil.lastTurnGuesses(st)
 
     function = fn mapping, state ->
       {_, guessInfo} = mapping

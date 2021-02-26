@@ -78,7 +78,6 @@ defmodule Bulls.GameServer do
     st = BackupAgent.get(name)
     errorMessage = GameUtil.getErrorMessages(st, userName, attempt)
 
-    IO.inspect([:beforeView, userName, errorMessage])
     cond do
       errorMessage != nil ->
         {:reply, Game.view(st, userName, errorMessage), game}
@@ -88,7 +87,6 @@ defmodule Bulls.GameServer do
 
       true ->
         game = Game.guess(game, attempt, userName)
-        IO.inspect([:guess_call, game])
         BackupAgent.put(name, game)
         {:reply, game, game}
     end
@@ -123,11 +121,9 @@ defmodule Bulls.GameServer do
   end
 
   def handle_info(:turn, game) do
-    IO.inspect([:timer, game])
 
     cond do
       game.gameState == :WIN ->
-        IO.inspect([:timerOutWin, game])
         {:noreply, %{game | timer: :NO_TIMER}}
 
       true ->
