@@ -8,3 +8,13 @@ export function player_list(playerMap) {
     });
     return players;
 }
+
+export function find_last_winners(playerMap) {
+    let winners = []
+    Object.keys(playerMap).map((username, idx) => {
+        if (playerMap[username][2]) {
+            winners.push(username)
+        }
+    });
+    return winners;
+}

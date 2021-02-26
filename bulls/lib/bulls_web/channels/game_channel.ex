@@ -73,12 +73,11 @@ defmodule BullsWeb.GameChannel do
     # if so, toss an error telling them to wait
     oldGame = GameServer.peek(name)
     oldTurn = oldGame.turnNumber
-    IO.inspect([:guessHandle, oldGame, oldTurn])
 
     name = socket.assigns[:name]
     |> GameServer.guess(attempt, userName)
     |> Game.view(userName)
-
+    IO.inspect([:handle_guess, name, name.errorMessage])
     # if the turn is different, that means we killed the timer and moved on
     # therefore everyone can see eachother's guesses
     if !(oldTurn == name.turnNumber) do

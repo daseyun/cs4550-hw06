@@ -73,11 +73,6 @@ defmodule Bulls.GameUtil do
     userGuesses = userGuesses(st.guesses, userName)
 
     cond do
-      # TODO: do we need to check this per player ?
-      # TODO: might work after we implement the wait for everyone broadcast
-      # isAlreadyAttempted?(guesses, attempt) ->
-      #   "number already guessed"
-
       !isValidTurnAttempt(userGuesses, st.turnNumber) ->
         "invalid move. you must wait for everyone to go."
       !isAttemptProper?(attempt) ->
@@ -102,7 +97,6 @@ defmodule Bulls.GameUtil do
 
   def isValidTurnAttempt(userTurns, turnNumber) do
     !Enum.any?(userTurns, fn(x) -> x == turnNumber end)
-    true # delete this later
   end
 
   # check if attempt was already inputted before.
@@ -112,7 +106,7 @@ defmodule Bulls.GameUtil do
     end)
   end
 
-  # check if attempt is valid: 4 digits. all unique. no start with 0.
+  # check if attempt is validstat 4 digits. all unique. no start with 0.
   defp isAttemptProper?(attempt) do
     digit1 = String.slice(attempt, 0..0)
     l = String.length(attempt)

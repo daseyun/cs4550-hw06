@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 // import { ch_change_player_type } from "../socket";
-import { player_list, num_players } from "../utils";
+import { player_list, num_players, find_last_winners } from "../utils";
 
 function IsReady({ ready }) {
   return (
@@ -11,15 +11,17 @@ function IsReady({ ready }) {
         id="isReady"
         value="Ready"
       />
-      <label htmlFor="isReady">Ready to start</label>
+      <label htmlFor="isReady">Ready</label>
     </div>
   );
 }
 
 function GameSetup({ appState, ch_ready, ch_change_player_type }) {
   // i.e. a lobby
+  let { gameName, userName, playerMap } = appState;
+  let playerInfo = appState.playerMap[userName];
   const [state, setState] = useState({
-    playerType: "Observer",
+    playerType: playerInfo ? playerInfo[0] : "Observer",
     playerIsReady: false,
   });
   // players individually set whether or not they're ready
@@ -27,9 +29,9 @@ function GameSetup({ appState, ch_ready, ch_change_player_type }) {
   // wait for remaining player to ready up.
   // observers have no say in starting the game
   let { playerType, playerIsReady } = state;
-  let { gameName, userName, playerMap } = appState;
   let players = player_list(playerMap);
-
+  let prev_winners = find_last_winners(playerMap);
+  console.log(prev_winners)
   function ready(ev) {
     setState({ ...state, playerIsReady: ev.target.checked });
     ch_ready(userName, state.playerType);
@@ -49,15 +51,20 @@ function GameSetup({ appState, ch_ready, ch_change_player_type }) {
     readyUp = <IsReady ready={ready} />;
   }
 
+  let previousWinners = (<span></span>);
+  console.log(prev_winners)
+  if (prev_winners != []) {
+    previousWinners = (<div>Previous winners: {prev_winners.join(', ')}</div>)
+  }
+
   return (
     <div>
-      Gamesetup
       <div className="row">
         <div className="column">
-          <h1>Waiting to start...</h1>
-          <div> {gameName}</div>
-          <div> {userName}</div>
-          <div> playerType: {playerType} </div>
+          <h2>Waiting to start...</h2>
+          <h4>Game: {gameName}</h4>
+          <div>User: {userName}</div>
+          <div>Player Type: {playerType} </div>
           <label htmlFor="playerType">Are you...</label>
           <select
             id="playerType"
@@ -71,6 +78,7 @@ function GameSetup({ appState, ch_ready, ch_change_player_type }) {
           {readyUp}
         </div>
         <div className="column">
+          {previousWinners}
           <table>
             <thead>
               <tr>
@@ -78,7 +86,10 @@ function GameSetup({ appState, ch_ready, ch_change_player_type }) {
                 <th> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
                 <th>Username</th>
                 <th>Playertype</th>
-                <th>playerIsReady?</th>
+                <th>Ready?</th>
+                {/* <th>Won Last Game</th> */}
+                <th>Wins</th>
+                <th>Losses</th>
               </tr>
             </thead>
             <tbody>
@@ -88,6 +99,8 @@ function GameSetup({ appState, ch_ready, ch_change_player_type }) {
                   <td>{username}</td>
                   <td>{playerMap[username][0]}</td>
                   <td>{playerMap[username][1] ? "✓" : ""}</td>
+                  <td>{playerMap[username][3]}</td>
+                  <td>{playerMap[username][4]}</td>
                 </tr>
               ))}
             </tbody>
